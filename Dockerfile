@@ -26,12 +26,16 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Optionally prune dev deps to reduce image size
-RUN npm prune --production
+# Keep TypeScript for next.config.ts, but remove other dev dependencies
+RUN npm prune --production --include=dev
+RUN npm install typescript@^5 --production
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
+
+# Ensure system binaries are accessible to the nextjs user
+RUN chown -R nextjs:nodejs /usr/bin/ffmpeg /usr/bin/yt-dlp /usr/local/bin/ffmpeg /usr/local/bin/yt-dlp 2>/dev/null || true
 
 # Change ownership of the app directory
 RUN chown -R nextjs:nodejs /app

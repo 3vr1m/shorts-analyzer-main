@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose version removed (obsolete in newer versions)
 
 services:
   # Main application
