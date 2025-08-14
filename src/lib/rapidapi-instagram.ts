@@ -90,14 +90,14 @@ export class RapidAPIInstagramService {
     try {
       await this.rateLimit();
       
-      // For demonstration, we'll simulate different API approaches
-      const selectedAPI = availableAPIs[0]; // Use first available
+      // Use the first available API service
+      const selectedAPI = availableAPIs[0];
       
-      // Simulate API call
-      const mockResponse = await this.simulateRapidAPICall(selectedAPI, options);
+      // Make real API call
+      const apiResponse = await this.makeRapidAPICall(selectedAPI, options);
       
       return {
-        items: mockResponse.items,
+        items: apiResponse.items,
         cost: { estimated: selectedAPI.costPerCall, currency: 'USD' },
         meta: { 
           source: `RapidAPI - ${selectedAPI.name}`,
@@ -113,20 +113,15 @@ export class RapidAPIInstagramService {
   /**
    * Make real RapidAPI call to Instagram Data API
    */
-  private async simulateRapidAPICall(api: any, options: InstagramTrendingOptions): Promise<{
+  private async makeRapidAPICall(api: any, options: InstagramTrendingOptions): Promise<{
     items: InstagramTrendItem[];
     success: boolean;
   }> {
     console.log(`🔄 Calling ${api.name} API...`);
     
-    // Check if we have a real API key (not a demo key)
-    const isRealAPI = this.config.apiKey && 
-                     this.config.apiKey !== 'demo-key' && 
-                     this.config.apiKey.length > 20;
-    
-    if (!isRealAPI) {
-      console.log('📋 Using simulated data (no real API key provided)');
-      return this.generateSimulatedAPIResponse(options);
+    // Validate API key
+    if (!this.config.apiKey || this.config.apiKey === 'demo-key' || this.config.apiKey.length < 20) {
+      throw new Error('Invalid or missing RapidAPI key. Please provide a valid API key.');
     }
     
     try {
@@ -157,6 +152,9 @@ export class RapidAPIInstagramService {
         if (response.status === 403) {
           throw new Error('Invalid API key or insufficient permissions.');
         }
+        if (response.status === 401) {
+          throw new Error('Unauthorized. Please check your RapidAPI key.');
+        }
         throw new Error(`API call failed: ${response.status} ${response.statusText}`);
       }
       
@@ -166,63 +164,12 @@ export class RapidAPIInstagramService {
       return this.transformRapidAPIResponse(data, api);
       
     } catch (error: any) {
-      console.warn(`⚠️ Real API call failed, falling back to simulated data:`, error.message);
-      // Fallback to simulated data on API failure
-      return this.generateSimulatedAPIResponse(options);
+      console.error(`❌ RapidAPI call failed:`, error.message);
+      throw new Error(`RapidAPI request failed: ${error.message}`);
     }
   }
 
-  /**
-   * Generate simulated API response for development
-   */
-  private async generateSimulatedAPIResponse(options: InstagramTrendingOptions): Promise<{
-    items: InstagramTrendItem[];
-    success: boolean;
-  }> {
-    const simulatedItems: InstagramTrendItem[] = [
-      {
-        id: 'rapidapi_sim_1',
-        url: 'https://instagram.com/reel/CpApiTest1/',
-        shortcode: 'CpApiTest1',
-        type: 'reel',
-        title: 'RapidAPI Demo: Viral Cooking Technique',
-        caption: 'This cooking hack from RapidAPI data is trending! 🔥',
-        hashtags: ['cooking', 'rapidapi', 'trending', 'hack'],
-        creator: {
-          username: 'rapidapi_chef',
-          displayName: 'RapidAPI Chef Demo',
-          verified: false,
-          followerCount: 450000
-        },
-        metrics: {
-          likes: 234000,
-          comments: 8900,
-          views: 1200000,
-          plays: 1200000,
-          shares: 12400
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpApiTest1/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpApiTest1/media/',
-          duration: 23
-        },
-        publishedAt: new Date(Date.now() - 21600000).toISOString(), // 6 hours ago
-        region: options.region || 'US',
-        trendScore: this.calculateTrendScore({
-          views: 1200000,
-          likes: 234000,
-          comments: 8900,
-          shares: 12400,
-          ageHours: 6
-        })
-      }
-    ];
-
-    return {
-      items: simulatedItems,
-      success: true
-    };
-  }
+  // Removed simulated data generation - only real API calls allowed
 
   /**
    * Transform RapidAPI response to our format
@@ -514,7 +461,11 @@ export function createRapidAPIInstagramService(apiKey: string): RapidAPIInstagra
  */
 export function createRapidAPIInstagramServiceWithFallback(): RapidAPIInstagramService {
   const allKeys = getAllValidAPIKeys();
-  const primaryKey = getFirstValidAPIKey() || 'demo-key';
+  const primaryKey = getFirstValidAPIKey();
+  
+  if (!primaryKey) {
+    throw new Error('No valid RapidAPI keys found. Please configure at least one API key.');
+  }
   
   console.log(`🔑 Found ${allKeys.length} valid API keys for fallback`);
   
@@ -551,15 +502,7 @@ export async function getInstagramTrendingWithFallback(
   const allKeys = getAllValidAPIKeys();
   
   if (allKeys.length === 0) {
-    console.log('🔑 No valid API keys found, using demo data');
-    const service = createRapidAPIInstagramService('demo-key');
-    const result = await service.getTrendingContent(options);
-    return {
-      items: result.items,
-      usedKey: 'demo-key',
-      attempts: 1,
-      cost: result.cost
-    };
+    throw new Error('No valid RapidAPI keys found. Please configure at least one API key.');
   }
   
   let lastError: Error | null = null;

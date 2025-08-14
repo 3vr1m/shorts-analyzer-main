@@ -111,9 +111,7 @@ export class InstagramTrendingService {
 
         case 'mock':
         default:
-          // Use mock data for development/demonstration
-          items = await this.getMockTrendingData(options);
-          sources.push('mock-data');
+          throw new Error('Mock data is not allowed in production. Please use a valid method: "api", "scraping", or "hybrid".');
           break;
       }
 
@@ -139,186 +137,10 @@ export class InstagramTrendingService {
   }
 
   /**
-   * Mock data for development and demonstration
+   * Mock data generation removed - only real API calls allowed in production
    */
   private async getMockTrendingData(options: InstagramTrendingOptions): Promise<InstagramTrendItem[]> {
-    console.log('📝 Generating mock Instagram trending data...');
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const baseTrends: InstagramTrendItem[] = [
-      {
-        id: 'instagram_trending_1',
-        url: 'https://instagram.com/reel/CpQrStFgHi7/',
-        shortcode: 'CpQrStFgHi7',
-        type: 'reel',
-        title: '🔥 Viral Dance Challenge Taking Over Instagram',
-        caption: 'This dance is EVERYWHERE! Who else is obsessed? 💃✨',
-        hashtags: ['viraldance', 'trendingnow', 'dancechallenge', 'foryou', 'viral'],
-        creator: {
-          username: 'trendsetterqueen',
-          displayName: 'Sarah | Dance Creator',
-          verified: true,
-          followerCount: 2850000
-        },
-        metrics: {
-          likes: 892000,
-          comments: 24500,
-          views: 5200000,
-          plays: 5200000,
-          shares: 47800 // High share count = viral
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpQrStFgHi7/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpQrStFgHi7/media/',
-          duration: 15
-        },
-        publishedAt: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-        region: options.region || 'US',
-        trendScore: 0 // Will be calculated
-      },
-      {
-        id: 'instagram_trending_2',
-        url: 'https://instagram.com/reel/CpMnKlOpQr3/',
-        shortcode: 'CpMnKlOpQr3',
-        type: 'reel',
-        title: '10 Second Life Hack That Will Blow Your Mind',
-        caption: 'This changed EVERYTHING for me! 🤯 Save this for later!',
-        hashtags: ['lifehack', 'productivitytips', 'viral', 'musttry', 'trending'],
-        creator: {
-          username: 'lifehackguru',
-          displayName: 'Alex | Life Hacks',
-          verified: false,
-          followerCount: 1200000
-        },
-        metrics: {
-          likes: 654000,
-          comments: 18900,
-          views: 3800000,
-          plays: 3800000,
-          shares: 89200 // Very high share count
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpMnKlOpQr3/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpMnKlOpQr3/media/',
-          duration: 22
-        },
-        publishedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        region: options.region || 'US',
-        trendScore: 0
-      },
-      {
-        id: 'instagram_trending_3',
-        url: 'https://instagram.com/reel/CpZxWvEgHj9/',
-        shortcode: 'CpZxWvEgHj9',
-        type: 'reel',
-        title: 'POV: You just discovered this trending sound',
-        caption: 'The audio is TOO good 🎵 Use this sound before everyone else does!',
-        hashtags: ['trendingaudio', 'pov', 'viral', 'newsound', 'audio'],
-        creator: {
-          username: 'audiomaster23',
-          displayName: 'Music & Trends',
-          verified: true,
-          followerCount: 950000
-        },
-        metrics: {
-          likes: 445000,
-          comments: 12400,
-          views: 2100000,
-          plays: 2100000,
-          shares: 35600
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpZxWvEgHj9/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpZxWvEgHj9/media/',
-          duration: 18
-        },
-        publishedAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        region: options.region || 'US',
-        trendScore: 0
-      },
-      {
-        id: 'instagram_trending_4',
-        url: 'https://instagram.com/reel/CpXyZaBcDef/',
-        shortcode: 'CpXyZaBcDef',
-        type: 'reel',
-        title: 'Fitness transformation that went viral',
-        caption: 'From couch to confidence in 90 days! The results speak for themselves 💪',
-        hashtags: ['fitness', 'transformation', 'motivation', 'health', 'workout'],
-        creator: {
-          username: 'fitnessjourney',
-          displayName: 'Emma | Fitness Coach',
-          verified: true,
-          followerCount: 1800000
-        },
-        metrics: {
-          likes: 523000,
-          comments: 15600,
-          views: 2900000,
-          plays: 2900000,
-          shares: 67200
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpXyZaBcDef/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpXyZaBcDef/media/',
-          duration: 28
-        },
-        publishedAt: new Date(Date.now() - 64800000).toISOString(), // 18 hours ago
-        region: options.region || 'US',
-        trendScore: 0
-      },
-      {
-        id: 'instagram_trending_5',
-        url: 'https://instagram.com/reel/CpQwErTyUiO/',
-        shortcode: 'CpQwErTyUiO',
-        type: 'reel',
-        title: 'Cooking hack every chef wishes they knew',
-        caption: 'This one trick will change how you cook forever! Restaurant quality at home 👨‍🍳',
-        hashtags: ['cooking', 'chef', 'hack', 'kitchen', 'recipe'],
-        creator: {
-          username: 'homechefpro',
-          displayName: 'Marco | Home Chef',
-          verified: false,
-          followerCount: 890000
-        },
-        metrics: {
-          likes: 378000,
-          comments: 21300,
-          views: 2200000,
-          plays: 2200000,
-          shares: 56700
-        },
-        media: {
-          thumbnail: 'https://instagram.com/reel/CpQwErTyUiO/media/?size=m',
-          videoUrl: 'https://instagram.com/reel/CpQwErTyUiO/media/',
-          duration: 25
-        },
-        publishedAt: new Date(Date.now() - 129600000).toISOString(), // 36 hours ago
-        region: options.region || 'US',
-        trendScore: 0
-      }
-    ];
-
-    // Filter by niche if specified
-    let filteredTrends = baseTrends;
-    if (options.niche) {
-      const nicheQuery = options.niche.toLowerCase();
-      filteredTrends = baseTrends.filter(item => 
-        item.title.toLowerCase().includes(nicheQuery) ||
-        item.caption.toLowerCase().includes(nicheQuery) ||
-        item.hashtags.some(tag => tag.includes(nicheQuery)) ||
-        item.creator.displayName.toLowerCase().includes(nicheQuery)
-      );
-    }
-
-    // Calculate Instagram-specific trend scores
-    const trendsWithScores = filteredTrends.map(item => ({
-      ...item,
-      trendScore: this.calculateInstagramTrendScore(item)
-    }));
-
-    return trendsWithScores;
+    throw new Error('Mock data is not allowed in production. Please use real API methods.');
   }
 
   /**
@@ -406,14 +228,8 @@ export class InstagramTrendingService {
       };
       
     } catch (error: any) {
-      console.warn('RapidAPI failed, trying fallback:', error.message);
-      
-      // Fallback to mock data for development
-      const mockItems = await this.getMockTrendingData(options);
-      return {
-        items: mockItems,
-        cost: { estimated: 0, currency: 'USD' }
-      };
+      console.error('RapidAPI failed:', error.message);
+      throw new Error(`RapidAPI request failed: ${error.message}`);
     }
   }
 
@@ -431,11 +247,8 @@ export class InstagramTrendingService {
 
     console.log('🔄 Running hybrid Instagram discovery...');
 
-    // For now, fall back to mock data
-    console.log('📝 Using mock data as hybrid fallback...');
-    const mockItems = await this.getMockTrendingData(options);
-    items.push(...mockItems);
-    sources.push('mock-data-fallback');
+    // Hybrid approach requires real API implementation
+    throw new Error('Hybrid trending discovery requires real API implementation. Please use "api" or "scraping" method.');
 
     return { 
       items, 
@@ -486,23 +299,8 @@ export class InstagramTrendingService {
   }> {
     console.log('🏷️  Analyzing trending hashtags...');
     
-    // Mock trending hashtags data
-    const mockHashtags = [
-      { tag: 'viral', postCount: 12500000, engagementRate: 8.5, trending: true, category: 'general', trendDirection: 'rising' as const },
-      { tag: 'reels', postCount: 45000000, engagementRate: 7.2, trending: true, category: 'content-type', trendDirection: 'stable' as const },
-      { tag: 'trending', postCount: 8900000, engagementRate: 9.1, trending: true, category: 'general', trendDirection: 'rising' as const },
-      { tag: 'dancechallenge', postCount: 3200000, engagementRate: 12.4, trending: true, category: 'entertainment', trendDirection: 'rising' as const },
-      { tag: 'lifehack', postCount: 2800000, engagementRate: 6.8, trending: true, category: 'lifestyle', trendDirection: 'stable' as const },
-      { tag: 'trendingaudio', postCount: 1900000, engagementRate: 11.2, trending: true, category: 'music', trendDirection: 'rising' as const },
-      { tag: 'fitness', postCount: 15600000, engagementRate: 5.9, trending: false, category: 'lifestyle', trendDirection: 'declining' as const }
-    ];
-
-    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate processing
-    
-    return {
-      hashtags: mockHashtags,
-      lastUpdated: new Date().toISOString()
-    };
+    // Real hashtag analysis requires API implementation
+    throw new Error('Trending hashtags analysis requires real API implementation. Please configure your API keys.');
   }
 
   private getMethodWarning(method: string): string | undefined {
@@ -513,8 +311,8 @@ export class InstagramTrendingService {
         return '💰 Third-party APIs have usage costs. Expect $0.001-$0.10 per request depending on the service.';
       case 'hybrid':
         return '🔄 Hybrid approach tries multiple methods. Results quality depends on available data sources and API keys.';
-      case 'mock':
-        return '📝 Using mock data for demonstration. Real implementation requires API keys or scraping setup.';
+              case 'mock':
+          return '❌ Mock data is not allowed in production. Please use real API methods.';
       default:
         return undefined;
     }
@@ -522,7 +320,7 @@ export class InstagramTrendingService {
 }
 
 // Export convenience functions
-export async function getInstagramTrending(options: InstagramTrendingOptions = { method: 'mock' }) {
+export async function getInstagramTrending(options: InstagramTrendingOptions = { method: 'api' }) {
   const service = new InstagramTrendingService({
     enableScraping: process.env.INSTAGRAM_SCRAPING_ENABLED === 'true',
     apiKey: process.env.INSTAGRAM_API_KEY

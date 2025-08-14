@@ -258,18 +258,7 @@ Output JSON ONLY with: {"niches":[{"name":"string"}...]}`;
 
   } catch (error) {
     console.error('Gemini niche suggestions failed:', error);
-    
-    // Return fallback suggestions
-    return [
-      'Quick productivity tips',
-      'Healthy meal prep ideas',
-      'Home workout routines',
-      'Tech gadget reviews',
-      'Personal finance tips',
-      'DIY home decor',
-      'Travel photography tips',
-      'Study techniques for students'
-    ];
+    throw new Error(`Failed to generate niche suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -362,39 +351,4 @@ JSON to rewrite:\n${JSON.stringify(strategy)}\n`;
   return strategy;
 }
 
-/**
- * Fallback function for when Gemini API is unavailable
- * This provides a basic script structure that can be enhanced
- */
-export function generateFallbackScript(niche: string, topic: string): GeminiScriptResponse {
-  return {
-    title: `${topic} | ${niche} Edition`,
-    hooks: [
-      `Did you know this simple ${niche.toLowerCase()} trick can change everything?`,
-      `I've been doing ${topic.toLowerCase()} wrong my entire life until...`,
-      `This ${niche.toLowerCase()} secret will blow your mind!`
-    ],
-    script: `[INTRO]
-Hey everyone! Today we're diving into ${topic} in the ${niche.toLowerCase()} space. 
-This is something I've been passionate about for years, and I can't wait to share what I've learned with you.
-
-[MAIN CONTENT]
-So here's the thing about ${topic.toLowerCase()} - most people get it completely wrong. 
-They think it's just about [insert common misconception], but that's only scratching the surface.
-
-Let me break down the three key points that changed everything for me:
-
-1. First, you need to understand that ${topic.toLowerCase()} isn't just a trend - it's a fundamental shift in how we approach ${niche.toLowerCase()}.
-
-2. Second, the timing matters more than most people realize. You can't just jump in without proper preparation.
-
-3. Finally, consistency beats perfection every single time. I'd rather see you do this imperfectly every day than perfectly once a week.
-
-[CONCLUSION]
-The bottom line is this: ${topic} in the ${niche.toLowerCase()} world isn't going anywhere. 
-Those who adapt now will be the ones who thrive tomorrow.
-
-What's your experience with ${topic.toLowerCase()}? Drop a comment below and let me know!`,
-    cta: `If this helped you understand ${topic.toLowerCase()} better, smash that like button and subscribe for more ${niche.toLowerCase()} content! And don't forget to hit the notification bell so you never miss our latest tips and strategies.`
-  };
-}
+// Removed fallback script generation - only real Gemini API calls allowed

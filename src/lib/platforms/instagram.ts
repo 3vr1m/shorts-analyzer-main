@@ -108,12 +108,11 @@ export class InstagramAdapter implements PlatformAdapter {
       if (rapidApiResult.length > 0) {
         return rapidApiResult;
       }
+      throw new Error('No trending videos found via RapidAPI. Please check your API configuration.');
     } catch (error) {
-      console.warn('[Instagram] RapidAPI trending failed, using simulated data:', error instanceof Error ? error.message : String(error));
+      console.error('[Instagram] RapidAPI trending failed:', error instanceof Error ? error.message : String(error));
+      throw new Error(`Instagram trending failed: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    // Fallback to simulated data
-    return this.getSimulatedTrendingVideos(options);
   }
 
   async searchVideos(query: string, options: SearchOptions = {}): Promise<VideoMetadata[]> {
@@ -123,12 +122,11 @@ export class InstagramAdapter implements PlatformAdapter {
       if (rapidApiResult.length > 0) {
         return rapidApiResult;
       }
+      throw new Error('No search results found via RapidAPI. Please check your API configuration.');
     } catch (error) {
-      console.warn('[Instagram] RapidAPI search failed, using simulated data:', error instanceof Error ? error.message : String(error));
+      console.error('[Instagram] RapidAPI search failed:', error instanceof Error ? error.message : String(error));
+      throw new Error(`Instagram search failed: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    // Fallback to simulated data
-    return this.getSimulatedSearchResults(query, options);
   }
 
   private async getMetadataFromRapidAPI(url: string): Promise<VideoMetadata | null> {
@@ -158,46 +156,5 @@ export class InstagramAdapter implements PlatformAdapter {
     }
   }
 
-  private getSimulatedTrendingVideos(options: TrendingOptions): VideoMetadata[] {
-    const { duration, limit = 20 } = options;
-    const niche = this.mapDurationToNiche(duration);
-    
-    return Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
-      id: `simulated_instagram_${i + 1}`,
-      title: `Trending ${niche} Video ${i + 1}`,
-      description: `This is a simulated trending ${niche} video from Instagram`,
-      creator: `Creator ${i + 1}`,
-      creatorId: `creator_${i + 1}`,
-      viewCount: Math.floor(Math.random() * 1000000) + 10000,
-      likeCount: Math.floor(Math.random() * 100000) + 1000,
-      commentCount: Math.floor(Math.random() * 1000) + 100,
-      duration: duration === 'short' ? 30 : duration === 'medium' ? 180 : 600,
-      publishedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      thumbnailUrl: `https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Instagram+${i + 1}`,
-      hashtags: [niche, 'trending', 'instagram'],
-      platform: 'instagram',
-      url: `https://instagram.com/p/simulated_${i + 1}`
-    }));
-  }
-
-  private getSimulatedSearchResults(query: string, options: SearchOptions): VideoMetadata[] {
-    const { limit = 20 } = options;
-    
-    return Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
-      id: `search_instagram_${i + 1}`,
-      title: `Search Result: ${query} ${i + 1}`,
-      description: `This is a simulated search result for "${query}" on Instagram`,
-      creator: `Creator ${i + 1}`,
-      creatorId: `creator_${i + 1}`,
-      viewCount: Math.floor(Math.random() * 500000) + 5000,
-      likeCount: Math.floor(Math.random() * 50000) + 500,
-      commentCount: Math.floor(Math.random() * 500) + 50,
-      duration: Math.floor(Math.random() * 300) + 30,
-      publishedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      thumbnailUrl: `https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Search+${i + 1}`,
-      hashtags: [query.toLowerCase(), 'instagram', 'search'],
-      platform: 'instagram',
-      url: `https://instagram.com/p/search_${i + 1}`
-    }));
-  }
+  // Simulated data methods removed - only real API calls allowed in production
 }
