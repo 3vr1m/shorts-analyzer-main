@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  # Main application (Shorts Analyzer)
+  app:
+    build: .
+    container_name: shorts-analyzer-app
+    ports:
+      - "4001:3000"  # External port 4001 maps to internal port 3000
+    environment:
+      - NODE_ENV=production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - RAPIDAPI_KEY=${RAPIDAPI_KEY}
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - DB_HOST=postgres
+      - DB_USER=${DB_USER:-shorts_user}
+      - DB_PASSWORD=${DB_PASSWORD:-shorts_password}
+      - DB_NAME=shorts_analyzer
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - shorts-network
+
+  # PostgreSQL database (internal only)
+  postgres:
+    image: postgres:15-alpine
+    container_name: shorts-analyzer-postgres
+    environment:
+      - POSTGRES_DB=shorts_analyzer
+      - POSTGRES_USER=${DB_USER:-shorts_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-shorts_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-shorts_user}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - shorts-network
+
+  # Redis for caching (internal only)
+  redis:
+    image: redis:7-alpine
+    container_name: shorts-analyzer-redis
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - shorts-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  shorts-network:
+    driver: bridge
