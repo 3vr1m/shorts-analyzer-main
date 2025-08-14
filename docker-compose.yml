@@ -5,7 +5,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "4001:3000"  # Changed to map to external port 4001
     environment:
       - NODE_ENV=production
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -27,18 +27,18 @@ services:
       timeout: 10s
       retries: 3
 
-  # PostgreSQL database
+  # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     environment:
-      - POSTGRES_DB=shorts_analyzer
+      - POSTGRES_DB=${DB_NAME:-shorts_analyzer}
       - POSTGRES_USER=${DB_USER:-shorts_user}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-shorts_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Changed to avoid conflict with main DB
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-shorts_user}"]
@@ -50,7 +50,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"  # Changed to avoid conflict
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -60,19 +60,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Nginx reverse proxy
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-      - ./logs/nginx:/var/log/nginx
-    depends_on:
-      - app
-    restart: unless-stopped
+  # REMOVED nginx container - using main system nginx instead
 
 volumes:
   postgres_data:
