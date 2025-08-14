@@ -1,3 +1,66 @@
+name: Deploy to Hetzner
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: ${{ secrets.HETZNER_SSH_PORT || 22 }}
+          script: |
+            set -e
+            PROJECT_DIR="${{ secrets.PROJECT_DIR || '/root/shorts-analyzer' }}"
+            REPO_URL="${{ secrets.REPO_URL || 'https://github.com/3vr1m/shorts-analyzer-main.git' }}"
+            echo "🚀 Starting deployment to $PROJECT_DIR"
+            mkdir -p "$(dirname "$PROJECT_DIR")"
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              echo "📦 First-time setup: cloning repository..."
+              rm -rf "$PROJECT_DIR" || true
+              git clone "$REPO_URL" "$PROJECT_DIR"
+            fi
+            cd "$PROJECT_DIR"
+            echo "📥 Fetching latest changes..."
+            git fetch origin main
+            git reset --hard origin/main
+            echo "🔧 Writing .env from GitHub secrets..."
+            cat > .env << 'EOF'
+            NEXT_PUBLIC_OPENAI_API_KEY=${{ secrets.NEXT_PUBLIC_OPENAI_API_KEY }}
+            NEXT_PUBLIC_GOOGLE_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
+            NEXT_PUBLIC_YOUTUBE_API_KEY=${{ secrets.NEXT_PUBLIC_YOUTUBE_API_KEY }}
+            ADMIN_API_KEY=${{ secrets.ADMIN_API_KEY }}
+            ADMIN_SECRET=${{ secrets.ADMIN_SECRET }}
+            EOF
+            if docker compose version >/dev/null 2>&1; then
+              DC="docker compose"
+            else
+              DC="docker-compose"
+            fi
+            echo "🛑 Stopping existing containers..."
+            $DC down || true
+            echo "🧹 Cleaning up old images..."
+            docker system prune -f || true
+            echo "🔨 Building and starting containers..."
+            $DC up -d --build
+            echo "⏳ Waiting for services to start..."
+            sleep 30
+            echo "🔍 Checking container status..."
+            $DC ps
+            echo "🏥 Checking application health..."
+            if curl -fsS http://localhost:3000/api/health >/dev/null; then
+              echo "✅ Application is healthy!"
+            else
+              echo "❌ Application health check failed! Dumping app logs..."
+              $DC logs app || true
+              exit 1
+            fi
+            echo "🎉 Deployment completed successfully!"
 name: Deploy to Production Server
 
 on:

@@ -36,17 +36,17 @@ export function ContentIdeas({
       </h3>
       <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
         {ideas.slice(0, 6).map((idea, index) => (
-          <div key={index} className="min-w-[320px] max-w-[360px] snap-start border-2 border-default rounded-xl p-6 bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-lg">
+          <div key={index} className="min-w-[380px] max-w-[420px] snap-start border-2 border-default rounded-xl p-6 bg-card text-foreground shadow-lg">
             <div className="flex items-start justify-between mb-4">
-              <h4 className="font-bold text-xl flex-1">{idea.title}</h4>
-              <div className="flex gap-2 ml-4">
+              <h4 className="font-bold text-xl flex-1 pr-2">{idea.title}</h4>
+              <div className="flex gap-2 ml-4 flex-shrink-0">
                 {idea.suggestedLength && (
-                  <span className="text-base bg-white/20 dark:bg-gray-900/20 px-4 py-2 rounded-full font-bold">
+                  <span className="text-sm bg-muted text-muted-foreground px-3 py-1 rounded-full font-medium">
                     {idea.suggestedLength}s
                   </span>
                 )}
                 {idea.tone && (
-                  <span className="text-base bg-white/20 dark:bg-gray-900/20 px-4 py-2 rounded-full capitalize font-bold">
+                  <span className="text-sm bg-muted text-muted-foreground px-3 py-1 rounded-full capitalize font-medium">
                     {idea.tone}
                   </span>
                 )}
@@ -56,7 +56,7 @@ export function ContentIdeas({
             <p className="text-lg italic mb-4 leading-relaxed font-medium opacity-90">"{idea.hook}"</p>
             
             {showFormat && idea.format && (
-              <span className="inline-block px-6 py-3 bg-white text-gray-900 dark:bg-gray-900 dark:text-white text-lg rounded-lg font-bold mb-4">
+              <span className="inline-block px-6 py-3 bg-muted text-muted-foreground text-lg rounded-lg font-bold mb-4">
                 {idea.format}
               </span>
             )}
