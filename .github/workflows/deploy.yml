@@ -2,6 +2,7 @@ name: Deploy to Hetzner
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,7 +17,7 @@ jobs:
           port: ${{ secrets.HETZNER_SSH_PORT || 22 }}
           script: |
             set -e
-            PROJECT_DIR="${{ secrets.PROJECT_DIR || '/root/shorts-analyzer' }}"
+            PROJECT_DIR="${{ secrets.PROJECT_DIR || '/opt/shorts-analyzer' }}"
             REPO_URL="${{ secrets.REPO_URL || 'https://github.com/3vr1m/shorts-analyzer-main.git' }}"
             echo "🚀 Starting deployment to $PROJECT_DIR"
             mkdir -p "$(dirname "$PROJECT_DIR")"
@@ -31,6 +32,11 @@ jobs:
             git reset --hard origin/main
             echo "🔧 Writing .env from GitHub secrets..."
             cat > .env << 'EOF'
+            # Server-side keys
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
+            # Client-exposed keys (if needed)
             NEXT_PUBLIC_OPENAI_API_KEY=${{ secrets.NEXT_PUBLIC_OPENAI_API_KEY }}
             NEXT_PUBLIC_GOOGLE_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
             NEXT_PUBLIC_YOUTUBE_API_KEY=${{ secrets.NEXT_PUBLIC_YOUTUBE_API_KEY }}
