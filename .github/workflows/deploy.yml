@@ -36,6 +36,12 @@ jobs:
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
             YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            RAPIDAPI_KEY=${{ secrets.RAPIDAPI_KEY }}
+            # Database configuration
+            DB_NAME=shorts_analyzer
+            DB_USER=shorts_user
+            DB_PASSWORD=shorts_password
             # Client-exposed keys (if needed)
             NEXT_PUBLIC_OPENAI_API_KEY=${{ secrets.NEXT_PUBLIC_OPENAI_API_KEY }}
             NEXT_PUBLIC_GOOGLE_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
