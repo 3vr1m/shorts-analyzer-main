@@ -26,9 +26,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Keep TypeScript for next.config.ts, but remove other dev dependencies
-RUN npm prune --production --include=dev
-RUN npm install typescript@^5 --production
+# Remove dev dependencies (TypeScript is now in production dependencies)
+RUN npm prune --production
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
