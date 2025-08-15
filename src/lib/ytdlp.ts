@@ -75,7 +75,7 @@ export async function getVideoInfo(url: string): Promise<VideoMetadata> {
   const userAgent = getRandomMobileUserAgent();
   const headers = getRandomMobileHeaders();
   
-  const args = ["-J", url, "--user-agent", userAgent];
+  const args = ["-J", url, "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"];
   
   // Add mobile headers
   headers.forEach(header => {
@@ -136,7 +136,7 @@ export async function extractSubtitles(url: string): Promise<string | null> {
       "-o", join(tmp, "%(title)s.%(ext)s"),
       "--quiet",
       "--no-warnings",
-      "--user-agent", userAgent
+      "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"
     ];
     
     // Add mobile headers
@@ -274,7 +274,7 @@ export async function downloadAudioAsWav(url: string): Promise<{ wavPath: string
       "--no-playlist",
       "--quiet",
       "--no-warnings",
-      "--user-agent", userAgent
+      "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"
     ];
     
     // Add mobile headers

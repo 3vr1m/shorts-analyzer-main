@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       channel: videoData.channelTitle,
       uploader: videoData.channelTitle,
       views: parseInt(videoData.viewCount) || 0,
+      likes: parseInt(videoData.likeCount) || 0,
       published: videoData.publishedAt,
       duration: videoData.duration
     };
@@ -213,6 +214,7 @@ export async function POST(request: NextRequest) {
       channel: videoData.channelTitle,
       uploader: videoData.channelTitle,
       views: parseInt(videoData.viewCount) || 0,
+      likes: parseInt(videoData.likeCount) || 0,
       published: videoData.publishedAt,
       duration: videoData.duration
     };
