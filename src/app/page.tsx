@@ -5,16 +5,17 @@ import { ContentIdeas, ContentIdea } from "@/components/ui/content-ideas";
 import { useProtection, useButtonProtection } from "@/contexts/ProtectionContext";
 
 type Analysis = {
-  metadata: { title: string; channel: string; view_count?: number | string; publishedAt?: string };
+  metadata: { title: string; channel: string; views?: number | string; published?: string };
   transcript: string;
-  // Flattened analysis fields from API
-  hook: string;
-  entryStyle: string;
-  niche: string;
-  structure: string;
-  lengthSeconds: number;
-  pace: string;
-  emotion: string;
+  analysis: {
+    hook: string;
+    entryStyle: string;
+    niche: string;
+    structure: string;
+    lengthSeconds: number;
+    pace: string;
+    emotion: string;
+  };
   ideas: { title: string; hook: string; outline: string; suggestedLength?: number; tone?: string; exampleTranscript?: string }[];
 };
 
@@ -396,11 +397,11 @@ export default function Home() {
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-1">Views</span>
-                    <span className="text-base font-medium accent">{Number((data.metadata as any).view_count ?? 0).toLocaleString()}</span>
+                    <span class="text-base font-medium accent">{Number(data.metadata.views ?? 0).toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-1">Published</span>
-                    <span className="text-base">{(data.metadata.publishedAt ? new Date(data.metadata.publishedAt).toLocaleDateString() : '')}</span>
+                    <span class="text-base">{(data.metadata.published ? new Date(data.metadata.published).toLocaleDateString() : '')}</span>
                   </div>
                 </div>
               </div>
@@ -425,27 +426,27 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Hook Strategy</div>
-                  <div className="text-sm">{data.hook}</div>
+                  <div class="text-sm">{data.analysis.hook}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Entry Style</div>
-                  <div className="text-sm capitalize">{data.entryStyle}</div>
+                  <div class="text-sm capitalize">{data.analysis.entryStyle}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Niche</div>
-                  <div className="text-sm">{data.niche}</div>
+                  <div class="text-sm">{data.analysis.niche}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Structure</div>
-                  <div className="text-sm">{data.structure}</div>
+                  <div class="text-sm">{data.analysis.structure}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Length & Pace</div>
-                  <div className="text-sm">{data.lengthSeconds}s • {data.pace}</div>
+                  <div class="text-sm">{data.analysis.lengthSeconds}s • {data.analysis.pace}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Emotion</div>
-                  <div className="text-sm capitalize">{data.emotion}</div>
+                  <div class="text-sm capitalize">{data.analysis.emotion}</div>
                 </div>
               </div>
             </div>
@@ -455,13 +456,13 @@ export default function Home() {
               ideas={(data?.ideas ?? []).map(idea => ({
                 ...idea,
                 exampleTranscript: generateExampleScript(idea, {
-                  hook: data.hook,
-                  entryStyle: data.entryStyle,
-                  niche: data.niche,
-                  structure: data.structure,
-                  lengthSeconds: data.lengthSeconds,
-                  pace: data.pace,
-                  emotion: data.emotion,
+                  hook: data.analysis.hook,
+                  entryStyle: data.analysis.entryStyle,
+                  niche: data.analysis.niche,
+                  structure: data.analysis.structure,
+                  lengthSeconds: data.analysis.lengthSeconds,
+                  pace: data.analysis.pace,
+                  emotion: data.analysis.emotion,
                 })
               }))}
               title="Content Ideas for You"
