@@ -1,6 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
-const queueManager = require('../services/queue-manager');
+// Use simple queue for Windows compatibility
+const queueManager = process.env.USE_SIMPLE_QUEUE === 'true' 
+  ? require('../services/simple-queue')
+  : require('../services/queue-manager');
 // Security middleware is applied at app level, no direct import needed
 
 /**

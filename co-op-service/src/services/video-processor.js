@@ -205,7 +205,7 @@ class VideoProcessor {
         '--format', 'best[height<=720]/best', // Limit to 720p for processing efficiency
         '--output', outputPath,
         '--no-playlist',
-        '--extract-flat', 'false',
+        // Removed --extract-flat as it's not needed for downloading and causes compatibility issues
         videoUrl
       ];
       
@@ -293,13 +293,20 @@ class VideoProcessor {
       const command = [
         this.whisperPath,
         audioFile,
-        '--model', this.whisperModel,
-        '--language', this.whisperLanguage === 'auto' ? 'auto' : this.whisperLanguage,
+        '--model', this.whisperModel
+      ];
+      
+      // Only add language parameter if not auto-detect
+      if (this.whisperLanguage !== 'auto') {
+        command.push('--language', this.whisperLanguage);
+      }
+      
+      command.push(
         '--output_format', 'json',
         '--output_dir', path.join(this.tempDir, 'transcripts'),
         '--fp16', 'False', // Use FP32 for better compatibility
         '--verbose', 'False'
-      ];
+      );
       
       if (process.env.DEBUG_VIDEO_PROCESSING === 'true') {
         command.push('--verbose', 'True');
@@ -357,7 +364,7 @@ class VideoProcessor {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert video content analyst. Analyze the provided video information and transcript to provide comprehensive insights about the content, including themes, sentiment, key topics, engagement potential, and actionable recommendations.'
+            content: 'You are an expert video content analyst. Analyze the provided video information and transcript to provide comprehensive insights about the content, including themes, sentiment, key topics, engagement potential, and actionable recommendations. Always respond with valid JSON format.'
           },
           {
             role: 'user',
@@ -365,8 +372,7 @@ class VideoProcessor {
           }
         ],
         max_tokens: this.openaiMaxTokens,
-        temperature: 0.1, // Low temperature for consistent analysis
-        response_format: { type: "json_object" }
+        temperature: 0.1 // Low temperature for consistent analysis
       });
       
       const analysisText = response.choices[0]?.message?.content;
@@ -374,8 +380,18 @@ class VideoProcessor {
         throw new Error('Empty response from OpenAI');
       }
       
+      // Clean the response text to handle markdown code blocks
+      let cleanedText = analysisText.trim();
+      
+      // Remove markdown code block markers if present
+      if (cleanedText.startsWith('```json')) {
+        cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedText.startsWith('```')) {
+        cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
       // Parse the JSON response
-      const analysis = JSON.parse(analysisText);
+      const analysis = JSON.parse(cleanedText);
       
       // Add metadata
       analysis.metadata = {
@@ -579,14 +595,23 @@ Please provide detailed analysis in the JSON format specified above.`;
     return new Promise((resolve, reject) => {
       logger.debug(`Starting: ${description}`, { command: command.join(' ') });
       
-      const process = spawn(command[0], command.slice(1), {
+      // Handle Windows executable paths properly
+      const spawnOptions = {
         stdio: ['pipe', 'pipe', 'pipe']
-      });
+      };
+      
+      // On Windows, if the command contains .exe, ensure shell: false (default)
+      // but handle paths with spaces properly
+      if (process.platform === 'win32') {
+        spawnOptions.shell = false;
+      }
+      
+      const childProcess = spawn(command[0], command.slice(1), spawnOptions);
       
       let output = '';
       let errorOutput = '';
       
-      process.stdout.on('data', (data) => {
+      childProcess.stdout.on('data', (data) => {
         output += data.toString();
         
         // Update progress periodically
@@ -595,11 +620,11 @@ Please provide detailed analysis in the JSON format specified above.`;
         job.progress(Math.round(currentProgress));
       });
       
-      process.stderr.on('data', (data) => {
+      childProcess.stderr.on('data', (data) => {
         errorOutput += data.toString();
       });
       
-      process.on('close', (code) => {
+      childProcess.on('close', (code) => {
         if (code === 0) {
           logger.debug(`Completed: ${description}`, { code });
           job.progress(endProgress);
@@ -610,7 +635,7 @@ Please provide detailed analysis in the JSON format specified above.`;
         }
       });
       
-      process.on('error', (error) => {
+      childProcess.on('error', (error) => {
         logger.error(`Error: ${description}`, { error: error.message });
         reject(error);
       });
