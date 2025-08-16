@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Redis for queue management
+  redis:
+    image: redis:7-alpine
+    container_name: coop-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Co-op Video Analysis Service
+  coop-service:
+    build: .
+    container_name: coop-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Server Configuration
+      - PORT=8080
+      - NODE_ENV=production
+      - PUBLIC_IP=${PUBLIC_IP:-83.27.41.204}
+      
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      
+      # API Keys (from .env file)
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-admin-key-change-this}
+      - DEV_API_KEY=${DEV_API_KEY:-dev-key-12345}
+      - API_KEYS=${API_KEYS:-client-key-1,client-key-2}
+      
+      # OpenAI Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-4000}
+      
+      # Processing Configuration
+      - MAX_CONCURRENT_JOBS=${MAX_CONCURRENT_JOBS:-4}
+      - MAX_QUEUE_SIZE=${MAX_QUEUE_SIZE:-100}
+      - MAX_VIDEO_DURATION=${MAX_VIDEO_DURATION:-600}
+      
+      # External Tools (pre-installed in container)
+      - YTDLP_PATH=yt-dlp
+      - FFMPEG_PATH=ffmpeg
+      - WHISPER_PATH=whisper
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - ENABLE_CONSOLE_LOGS=true
+      
+      # Performance
+      - ENABLE_METRICS=true
+      - METRICS_INTERVAL=60000
+    
+    volumes:
+      # Persist logs and temporary files
+      - ./logs:/app/logs
+      - ./storage:/app/storage
+      - coop_temp:/app/temp
+    
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  redis_data:
+    driver: local
+  coop_temp:
+    driver: local
+
+networks:
+  default:
+    name: coop-network

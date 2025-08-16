@@ -75,7 +75,7 @@ export async function getVideoInfo(url: string): Promise<VideoMetadata> {
   const userAgent = getRandomMobileUserAgent();
   const headers = getRandomMobileHeaders();
   
-  const args = ["-J", url, "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"];
+  const args = ["-J", url, "--user-agent", userAgent];
   
   // Add mobile headers
   headers.forEach(header => {
@@ -136,7 +136,7 @@ export async function extractSubtitles(url: string): Promise<string | null> {
       "-o", join(tmp, "%(title)s.%(ext)s"),
       "--quiet",
       "--no-warnings",
-      "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"
+      "--user-agent", userAgent
     ];
     
     // Add mobile headers
@@ -146,21 +146,16 @@ export async function extractSubtitles(url: string): Promise<string | null> {
     
     await execFileAsync("yt-dlp", subtitleArgs);
     
-    // List files to find subtitle files
-    const { stdout } = await execFileAsync("/bin/ls", ["-la", tmp]);
-    const lines = stdout.split("\n").filter(line => line.includes(".vtt") || line.includes(".srt"));
+    // List files to find subtitle files (Windows compatible)
+    const { readdir } = await import("node:fs/promises");
+    const allFiles = await readdir(tmp);
+    const subtitleFiles = allFiles.filter(file => file.endsWith('.vtt') || file.endsWith('.srt'));
     
-    if (lines.length > 0) {
-      // Find the best subtitle file (prefer .en.vtt or .en.srt)
-      const files = lines.map(line => {
-        const parts = line.trim().split(/\s+/);
-        return parts[parts.length - 1]; // filename is last part
-      }).filter(f => f.endsWith('.vtt') || f.endsWith('.srt'));
-      
+    if (subtitleFiles.length > 0) {
       // Prefer English subtitles, then auto-generated, then any
-      const preferredFile = files.find(f => f.includes('.en.')) || 
-                           files.find(f => f.includes('auto')) ||
-                           files[0];
+      const preferredFile = subtitleFiles.find(f => f.includes('.en.')) || 
+                           subtitleFiles.find(f => f.includes('auto')) ||
+                           subtitleFiles[0];
       
       if (preferredFile) {
         const { readFile } = await import("node:fs/promises");
@@ -274,7 +269,7 @@ export async function downloadAudioAsWav(url: string): Promise<{ wavPath: string
       "--no-playlist",
       "--quiet",
       "--no-warnings",
-      "--user-agent", userAgent, "--cookies", "youtube-cookies.txt"
+      "--user-agent", userAgent
     ];
     
     // Add mobile headers
@@ -284,12 +279,10 @@ export async function downloadAudioAsWav(url: string): Promise<{ wavPath: string
     
     await execFileAsync("yt-dlp", audioArgs);
 
-    // We don't know the id yet reliably here; list directory and find .wav
-    const { stdout } = await execFileAsync("/bin/ls", [tmp]);
-    const wav = stdout
-      .split("\n")
-      .map((s) => s.trim())
-      .filter((s) => s.endsWith(".wav"))[0];
+    // We don't know the id yet reliably here; list directory and find .wav (Windows compatible)
+    const { readdir } = await import("node:fs/promises");
+    const files = await readdir(tmp);
+    const wav = files.find((s) => s.endsWith(".wav"));
       
     if (!wav) {
       await cleanup();
