@@ -1,28 +1,32 @@
-# Docker Compose version removed (obsolete in newer versions)
+# Docker Compose for Shorts Analyzer with Co-op Integration
 
 services:
-  # Main application
+  # Main application with host networking to access co-op service
   app:
     build: .
-    ports:
-      - "4001:3000"  # Changed to map to external port 4001
+    network_mode: "host"  # This allows access to localhost:8080 co-op service
     environment:
       - NODE_ENV=production
+      - PORT=4001  # Set specific port since we're using host network
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
       - RAPIDAPI_KEY=${RAPIDAPI_KEY}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
       - ADMIN_SECRET=${ADMIN_SECRET}
-    depends_on:
-      - postgres
-      - redis
+      # Database connection using host network
+      - DATABASE_URL=postgresql://${DB_USER:-shorts_user}:${DB_PASSWORD:-shorts_password}@localhost:5433/${DB_NAME:-shorts_analyzer}
+      # Redis connection using host network
+      - REDIS_URL=redis://localhost:6380
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4001/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,7 +42,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5433:5432"  # Changed to avoid conflict with main DB
+      - "5433:5432"  # External port 5433
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-shorts_user}"]
@@ -50,7 +54,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"  # Changed to avoid conflict
+      - "6380:6379"  # External port 6380
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -60,12 +64,8 @@ services:
       timeout: 10s
       retries: 3
 
-  # REMOVED nginx container - using main system nginx instead
-
 volumes:
   postgres_data:
   redis_data:
 
-networks:
-  default:
-    name: shorts_analyzer_network
+# No custom networks needed with host networking

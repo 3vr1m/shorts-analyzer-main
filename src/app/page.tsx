@@ -397,11 +397,11 @@ export default function Home() {
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-1">Views</span>
-                    <span class="text-base font-medium accent">{Number(data.metadata.views ?? 0).toLocaleString()}</span>
+                    <span className="text-base font-medium accent">{Number(data.metadata.views ?? 0).toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-1">Published</span>
-                    <span class="text-base">{(data.metadata.published ? new Date(data.metadata.published).toLocaleDateString() : '')}</span>
+                    <span className="text-base">{(data.metadata.published ? new Date(data.metadata.published).toLocaleDateString() : '')}</span>
                   </div>
                 </div>
               </div>
@@ -426,27 +426,27 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Hook Strategy</div>
-                  <div class="text-sm">{data.analysis.hook}</div>
+                  <div className="text-sm">{data.analysis.hook}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Entry Style</div>
-                  <div class="text-sm capitalize">{data.analysis.entryStyle}</div>
+                  <div className="text-sm capitalize">{data.analysis.entryStyle}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Niche</div>
-                  <div class="text-sm">{data.analysis.niche}</div>
+                  <div className="text-sm">{data.analysis.niche}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Structure</div>
-                  <div class="text-sm">{data.analysis.structure}</div>
+                  <div className="text-sm">{data.analysis.structure}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Length & Pace</div>
-                  <div class="text-sm">{data.analysis.lengthSeconds}s • {data.analysis.pace}</div>
+                  <div className="text-sm">{data.analysis.lengthSeconds}s • {data.analysis.pace}</div>
                 </div>
                 <div className="p-6 rounded-lg border border-default">
                   <div className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Emotion</div>
-                  <div class="text-sm capitalize">{data.analysis.emotion}</div>
+                  <div className="text-sm capitalize">{data.analysis.emotion}</div>
                 </div>
               </div>
             </div>
