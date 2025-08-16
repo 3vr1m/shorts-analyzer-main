@@ -1,14 +1,13 @@
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
 const queueManager = require('../services/queue-manager');
-const { SecurityMiddleware } = require('../middleware/security');
+// Security middleware is applied at app level, no direct import needed
 
 /**
  * Controller for video processing API endpoints
  */
 class VideoController {
   constructor() {
-    this.securityMiddleware = new SecurityMiddleware();
     this.activeRequests = new Map(); // Track active requests
   }
 

@@ -2,7 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+// Load environment variables first
+try {
+  require('dotenv').config();
+  console.log('✅ Environment variables loaded');
+} catch (error) {
+  console.error('❌ Failed to load environment variables:', error.message);
+  process.exit(1);
+}
 
 const logger = require('./utils/logger');
 const videoController = require('./controllers/video-controller');
@@ -207,9 +214,25 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-// Initialize services
-queueManager.initialize();
-monitoring.initialize();
+// Initialize services with error handling
+(async () => {
+  try {
+    console.log('🔄 Initializing queue manager...');
+    await queueManager.initialize();
+    console.log('✅ Queue manager initialized');
+  } catch (error) {
+    console.warn('⚠️ Queue manager failed to initialize:', error.message);
+    console.log('🔄 Service will continue without queue functionality');
+  }
+
+  try {
+    console.log('🔄 Initializing monitoring...');
+    await monitoring.initialize();
+    console.log('✅ Monitoring initialized');
+  } catch (error) {
+    console.warn('⚠️ Monitoring failed to initialize:', error.message);
+  }
+})();
 
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
